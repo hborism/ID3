@@ -1,7 +1,7 @@
 %This document contains data containing examples of when a person waits for a 
 %table or not at a given restaurantsdf.
 
-@relation whatiswronghere
+@relation waitornot
 
 @attribute alternative			 {yes, no}
 @attribute bar	{yes,    no}
@@ -22,7 +22,7 @@
 %
 yes,no,no,yes,some,$$$,no,yes,French,0-10min, yes
 yes,no,no,yes,full,$,no,no,Thai,30-60min, no
-no,yes,no,no,some,$,no,no,Thai,30-60min,yes
+no,yes,no,no,some,$,no,no,burger,30-60min,yes
 yes,no,yes,yes,full,$,yes,no,Thai,10-30min,yes
 yes,no,yes,no,full,$$$,no,yes,French,>60min,no
 no,yes,no,yes,some,$$,yes,yes,Italian,0-10min,yes

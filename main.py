@@ -1,5 +1,7 @@
 import os
 import sys
+import math
+
 
 
 class ARFFreader:
@@ -13,7 +15,7 @@ class ARFFreader:
     def __init__(self, filename):
 
 
-        self.__filename=filename
+        #self.__filename=filename
         f = open(filename, 'r')
         text_in_file=f.read()
 
@@ -64,9 +66,10 @@ class ARFFreader:
         self.__options=all_options
 
 
-        print(self.relation())
-        print(self.attributes())
-        print(self.options())
+        #print(self.relation())
+        #print(self.attributes())
+        #print(self.options())
+
         #read in data
         i=text_in_file.find("@data", i)+6
         i=self.jumpComments(text_in_file,i)
@@ -131,6 +134,78 @@ class ARFFreader:
         return i
 
 
+#---------------------------------data manipulation----------------------------------
+
+
+class Tree:
+    __data=[]
+    __no_examples=0
+    __attributes=[]
+    __options=[]
+    __goal=""
+    __goal_pos=-1
+    __goal_entropy=-1
+
+
+    def __init__(self,data, attributes,options,goal):
+        self.__data=data
+        self.__attributes=attributes
+        self.__options=options
+        self.__goal=goal
+
+
+        #find the goal_entorpy
+        #x is the position of the goal attribute in self.data
+        goal_pos=0
+        while attributes[goal_pos]!=goal:
+            goal_pos+=1
+        self.__goal_pos=goal_pos
+
+        #p is the number of positive outcomes of the goal function in our examples
+        p=0
+        self.__no_examples=len(data)
+        for i in range(0,self.__no_examples):
+            p=p+data[i][goal_pos]
+
+        # entropy of goal
+        self.__goal_entropy=self.entropy((p/self.__no_examples))
+
+    def entropy(self,q):
+        if q<=0 or q>=1:
+            return 0
+        return -(q*math.log(q,2)+(1-q)*math.log(1-q,2))
+
+    def goalEntropy(self):
+        return self.__goal_entropy
+
+    def gain(self, attribute):
+        if attribute not in self.__attributes:
+            return -1
+
+        #find position of attribute
+        attribute_pos=0
+        while self.__attributes[attribute_pos]!=attribute:
+            attribute_pos+=1
+
+        #creating a tree for this attribute (look at fig 18.4 in book)
+        no_options=len(self.__options[attribute_pos])
+        result=[]
+        for c in range(0,no_options):
+            result.append([0,0])
+
+        for i in range(0, self.__no_examples):
+            result[self.__data[i][attribute_pos]][self.__data[i][self.__goal_pos]]+=1
+
+
+        #calculate the remainder
+        remainder=0
+        c=0
+        for c in range(0, no_options):
+            remainder+=(sum(result[c])/self.__no_examples)*(self.entropy(result[c][0]/sum(result[c])))
+
+        #return goal entropy minus the remainder (see page 704 in book)
+        return self.__goal_entropy-remainder
+
 
 print("Welcome to ID3!")
 #print("Try to follow the instructions as closely as possible,\nthis program does not handle errors.")
@@ -139,4 +214,9 @@ r=ARFFreader("waitfortable.arff")
 print(r.relation())
 print(r.attributes())
 print(r.options())
-print(r.data())
+print((r.data()))
+
+t=Tree(r.data(),r.attributes(),r.options(),"goal")
+print(t.goalEntropy())
+
+print(t.gain("type"))
