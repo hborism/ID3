@@ -1,0 +1,34 @@
+%This document contains data containing examples of when a person waits for a 
+%table or not at a given restaurantsdf.
+
+@relation whatiswronghere
+
+@attribute alternative			 {yes, no}
+@attribute bar	{yes,    no}
+@attribute  fri/sat		{yes, no}
+@attribute 	hungry	{yes, no}
+@attribute patrons	{none, some, full}
+@attribute price{$, $$,$$$}
+@attribute raining {yes, no}
+@attribute reservation {yes, no}
+@attribute type {French, Italian, Thai, burger}
+@attribute waitEstimate {0-10min, 10-30min, 30-60min, >60min}
+
+@attribute 	goal			{yes, no}
+
+@data
+%
+% 12 examples
+%
+yes,no,no,yes,some,$$$,no,yes,French,0-10min, yes
+yes,no,no,yes,full,$,no,no,Thai,30-60min, no
+no,yes,no,no,some,$,no,no,Thai,30-60min,yes
+yes,no,yes,yes,full,$,yes,no,Thai,10-30min,yes
+yes,no,yes,no,full,$$$,no,yes,French,>60min,no
+no,yes,no,yes,some,$$,yes,yes,Italian,0-10min,yes
+no,yes,no,no,none,$,yes,no,burger,0-10min,no
+no,no,no,yes,some,$$,yes,yes,Thai,0-10min,yes
+no,yes,yes,no,full,$,yes,no,burger,>60min,no
+yes,yes,yes,yes,full,$$$,no,yes,Italian,10-30min,no
+no,no,no,no,none,$,no,no,Thai,0-10min,no
+yes,yes,yes,yes,full,$,no,no,burger,30-60min,yes
