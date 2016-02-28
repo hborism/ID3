@@ -261,6 +261,12 @@ class Tree:
 
         self.__root.print()
 
+        focusNode=Node("Hello",[1,3,2,3,],[])
+        focusNode2=Node("Goodbye",[1,3,2,3,],[])
+
+        focusNode.addChild(focusNode2)
+
+
         self.populateTree(self.__root)
 
 
@@ -290,7 +296,7 @@ class Tree:
                 parentNode.addChild(focusNode)
             elif len(sorted_examples_per_option[op][0])==0:
                 focusNode=Node("No",sorted_examples_per_option[op],[])
-                parentNode.addChild(focusNode)
+                parentNode.addChild(copy.copy(focusNode))
             elif len(sorted_examples_per_option[op][1])==0:
                 focusNode=Node("Yes",sorted_examples_per_option[op],[])
                 parentNode.addChild(focusNode)
