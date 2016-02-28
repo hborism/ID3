@@ -12,6 +12,7 @@ class ARFFreader:
     __options=[]
     __data=[]
 
+
     def __init__(self, filename):
 
 
@@ -143,8 +144,9 @@ class Tree:
     __attributes=[]
     __options=[]
     __goal=""
-    __goal_pos=-1
+    __goal_pos=0
     __goal_entropy=-1
+    __root=0
 
 
     def __init__(self,data, attributes,options,goal):
@@ -175,10 +177,16 @@ class Tree:
             return 0
         return -(q*math.log(q,2)+(1-q)*math.log(1-q,2))
 
+    def getAttributes(self):
+        return self.__attributes
+
     def goalEntropy(self):
         return self.__goal_entropy
 
-    def gain(self, attribute):
+
+
+
+    def gain(self, attribute, examples):
         if attribute not in self.__attributes:
             return -1
 
@@ -207,6 +215,56 @@ class Tree:
         return self.__goal_entropy-remainder
 
 
+    def sortExamples(self,examples):
+        sorted_examples=[]
+        p_examples=[]
+        n_examples=[]
+        for i in range(0, len(examples)):
+            if examples[i][self.__goal_pos]==0:
+                p_examples.append(examples[i])
+            else:
+                n_examples.append(examples[i])
+
+        sorted_examples.append(p_examples)
+        sorted_examples.append(n_examples)
+
+        return sorted_examples
+
+    def buildTree(self):
+        print(self.sortExamples(self.__data))
+
+class Node:
+    __attribute=""
+    __examples=[]
+    __options=[]
+    __children=[]
+
+    def __init__(self, attribute, examples, options):
+        self.__attribute=attribute
+        self.__examples=examples
+        self.__options=options
+
+    def getAttribute(self):
+        return self.getAttribute()
+
+    def getExamples(self):
+        return self.__examples
+
+    def getOptions(self):
+        return self.__options
+
+    def getChildren(self):
+        return self.__children
+
+    def addChild(self, child):
+        self.__children.append(child)
+
+    def print(self):
+        print("Attribute: ", self.__attribute)
+        print("Examples: ", self.__examples)
+        print("Options: ", self.__options, ", with corresponding children: ", self.__children)
+
+
 print("Welcome to ID3!")
 #print("Try to follow the instructions as closely as possible,\nthis program does not handle errors.")
 #filename = input("Input the file name\n")
@@ -219,4 +277,4 @@ print((r.data()))
 t=Tree(r.data(),r.attributes(),r.options(),"goal")
 print(t.goalEntropy())
 
-print(t.gain("type"))
+t.buildTree()
