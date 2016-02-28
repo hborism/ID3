@@ -183,9 +183,6 @@ class Tree:
     def goalEntropy(self):
         return self.__goal_entropy
 
-
-
-
     def gain(self, attribute, examples):
         if attribute not in self.__attributes:
             return -1
@@ -230,8 +227,20 @@ class Tree:
 
         return sorted_examples
 
+    def importance(self, attributes, examples):
+        maxgain=-1
+        maxgain_attribute=""
+        for x in attributes:
+            gain=self.gain(x, examples)
+            if gain>maxgain:
+                maxgain=gain
+                maxgain_attribute=x
+        return maxgain_attribute
+
     def buildTree(self):
-        print(self.sortExamples(self.__data))
+        qwe=self.__attributes
+        qwe.remove("goal")
+        print(self.importance(qwe,self.__data))
 
 class Node:
     __attribute=""
@@ -278,3 +287,4 @@ t=Tree(r.data(),r.attributes(),r.options(),"goal")
 print(t.goalEntropy())
 
 t.buildTree()
+
