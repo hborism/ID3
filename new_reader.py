@@ -17,7 +17,8 @@ class ARFFreader :
 				index += 1
 				break
 			index += 1
-		self.__attributes = {}
+		self.__attributes = []
+		self.__options = []
 		#Extract attributes
 		for i in range(index, len(lines)) :
 			l = lines[i]
@@ -25,26 +26,28 @@ class ARFFreader :
 				index += 1
 				break
 			if "@attribute" in l :
-				info = l.replace(",", "")
-				info = info.replace("{", "")
-				info = info.replace("}", "")
+				info = l.replace(",", " ")
+				info = info.replace("{", " ")
+				info = info.replace("}", " ")
 				info = info.split()
 				for j in range(len(info)) :
 					info[j] = info[j].strip()
-				self.__attributes[info[1]] = info[2:]
+				self.__attributes.append(info[1])
+				self.__options.append(info[2:])
 			index += 1
 		self.__data = []
 		#Extract data
 		for i in range(index, len(lines)) :
-			print(l)
 			l = lines[i]
 			if len(l) == 0 :
 				continue
 			if "@" in l or '%' in l :
 				continue
-			data = l.split(",")
-			for j in range(len(data)) :
-				data[j] = data[j].strip()
+			info = l.split(",")
+			data = []
+			for j in range(len(info)) :
+				k = info[j].strip()
+				data.append(self.__options[j].index(k))
 			self.__data.append(data)
 		
 
@@ -64,6 +67,9 @@ class ARFFreader :
 
 	def attributes(self) :
 		return self.__attributes
+    
+	def options(self):
+		return self.__options
 
 	def data(self) :
 		return self.__data

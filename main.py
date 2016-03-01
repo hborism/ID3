@@ -9,13 +9,13 @@ r=new_reader.ARFFreader("waitfortable.arff")
 #r=reader.ARFFreader("waitfortable.arff")
 print(r.relation())
 print(r.attributes())
-#print(r.options())
+print(r.options())
 print(r.data())
 
-#t=tree.Tree(r.data(),r.attributes(),r.options(),"goal")
-#print(t.goalEntropy())
+t=tree.Tree(r.data(),r.attributes(),r.options(),"goal")
+print(t.goalEntropy())
 
-#t.buildTree()
+t.buildTree()
 """
 c = 0
 abc=t.getRoot()
