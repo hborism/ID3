@@ -296,7 +296,7 @@ class Tree:
                 parentNode.addChild(focusNode)
             elif len(sorted_examples_per_option[op][0])==0:
                 focusNode=Node("No",sorted_examples_per_option[op],[])
-                parentNode.addChild(copy.copy(focusNode))
+                parentNode.addChild(focusNode)
             elif len(sorted_examples_per_option[op][1])==0:
                 focusNode=Node("Yes",sorted_examples_per_option[op],[])
                 parentNode.addChild(focusNode)
@@ -315,15 +315,12 @@ class Tree:
 
 
 class Node:
-    __attribute=""
-    __sorted_examples=[]
-    __options=[]
-    __children=[]
 
     def __init__(self, attribute, examples, options):
         self.__attribute=attribute
         self.__sorted_examples=examples
         self.__options=options
+        self.__children=[]
 
     def getAttribute(self):
         return self.__attribute
