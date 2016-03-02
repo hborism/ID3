@@ -197,11 +197,16 @@ class Node:
 		self.__children.append(child)
 
 	def print(self):
-		if self.__suffix is "" :
-			print(self.__indent, "Attribute: ", self.__attribute)
-		else : 
-			print(self.__indent, "Attribute: ", self.__suffix, " : ", self.__attribute)
-#		print("Examples (sorted): ", self.__sorted_examples)
+		s = self.__indent + "Attribute: "
+		if not self.__suffix is "" :
+			s += self.__suffix + " : "
+		p = 0
+		n = 0
+		if len(self.__sorted_examples) == 2 :
+			p = len(self.__sorted_examples[0])
+			n = len(self.__sorted_examples[1])
+		print(s, self.__attribute, " : [", p, ", ", n, "]")
+		#print(s, self.__attribute, " : ", self.__sorted_examples)
 		for child in self.__children :
 			child.print()
 		#print("Options: ", self.__options, ", with corresponding children: ", self.__children)
