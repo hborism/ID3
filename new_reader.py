@@ -7,11 +7,11 @@ class ARFFreader :
 		f = open(filename, 'r')
 		content = f.read()
 		lines = content.split('\n')
-		self.check_file(content)
+		self.check_file(content.lower())
 		index = 0
 		#Extract relation
 		for i in range(len(lines)) :
-			l = lines[i]
+			l = lines[i].lower()
 			if "@relation" in l :
 				self.__relation = l.split(" ")[1]
 				index += 1
@@ -21,7 +21,7 @@ class ARFFreader :
 		self.__options = []
 		#Extract attributes
 		for i in range(index, len(lines)) :
-			l = lines[i]
+			l = lines[i].lower()
 			if "@data" in l :
 				index += 1
 				break
@@ -38,7 +38,7 @@ class ARFFreader :
 		self.__data = []
 		#Extract data
 		for i in range(index, len(lines)) :
-			l = lines[i]
+			l = lines[i].lower()
 			if len(l) == 0 :
 				continue
 			if "@" in l or '%' in l :
@@ -49,6 +49,9 @@ class ARFFreader :
 			data = []
 			for j in range(len(info)) :
 				k = info[j].strip()
+				if "real" in self.__options[j] :
+					data.append(float(k))
+					continue
 				data.append(self.__options[j].index(k))
 			self.__data.append(data)
 		
@@ -61,6 +64,7 @@ class ARFFreader :
 			print("@relation")
 			print("@attribute")
 			print("@data")
+			exit()
 
 
 
