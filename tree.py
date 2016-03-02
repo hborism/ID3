@@ -32,10 +32,9 @@ class Tree:
 			p += data[i][self.__goal_pos]
 
 		# entropy of goal
-		self.__goal_entropy=self.entropy(p, self.__no_examples)
+		self.__goal_entropy=self.entropy(p/self.__no_examples)
 
-	def entropy(self, a, b):
-		q = float(a) / float(b)
+	def entropy(self, q):
 		if q<=0 or q>=1:
 			return 0
 		return -(q*math.log(q,2)+(1-q)*math.log(1-q,2))
@@ -79,7 +78,7 @@ class Tree:
 		c=0
 		for c in range(0, no_options):
 			if sum(result[c])!=0:
-				remainder+=(sum(result[c])/no_examples)*(self.entropy(result[c][0], sum(result[c])))
+				remainder+=(sum(result[c])/no_examples)*(self.entropy(result[c][0]/sum(result[c])))
 
 
 		#return goal entropy minus the remainder (see page 704 in book)
@@ -119,15 +118,7 @@ class Tree:
 		options=self.__options[self.__attributes.index(attribute)]
 
 		#create root node
-		self.__root=Node(attribute,self.sortExamples(self.__data),options)
-
-		#self.__root.print()
-
-		focusNode=Node("Hello",[1,3,2,3,],[])
-		focusNode2=Node("Goodbye",[1,3,2,3,],[])
-
-		focusNode.addChild(focusNode2)
-
+		self.__root=Node(attribute,self.sortExamples(self.__data),options, "", "")
 
 		self.populateTree(self.__root)
 
@@ -137,6 +128,7 @@ class Tree:
 		sorted_examples=parentNode.getSortedExamples()
 		attribute_pos=self.__attributes.index(parentNode.getAttribute())
 		sorted_examples_per_option=[]
+		indent = parentNode.getIndent() + "\t"
 
 		for op in range(0,len(options)):
 			temp_examples=[]
@@ -151,16 +143,16 @@ class Tree:
 		#print(sorted_examples_per_option)
 
 		#walk through each option to see if a child shall be a leaf or node
-		for op in range(0,len(options)):
-			abc=(sorted_examples_per_option[op])
+		for op in range(len(options)):
+			option = options[op]
 			if len(sorted_examples_per_option[op][0])==0 and len(sorted_examples_per_option[op][1])==0:
-				focusNode=Node("Yes/no",[],[])
+				focusNode=Node("Yes/no",[],[], indent, option)
 				parentNode.addChild(focusNode)
 			elif len(sorted_examples_per_option[op][0])==0:
-				focusNode=Node("No",sorted_examples_per_option[op],[])
+				focusNode=Node("No",sorted_examples_per_option[op],[], indent, option)
 				parentNode.addChild(copy.copy(focusNode))
 			elif len(sorted_examples_per_option[op][1])==0:
-				focusNode=Node("Yes",sorted_examples_per_option[op],[])
+				focusNode=Node("Yes",sorted_examples_per_option[op],[], indent, option)
 				parentNode.addChild(focusNode)
 			else:
 				attributes=copy.copy(self.__attributes)
@@ -169,7 +161,7 @@ class Tree:
 				child_attribute=self.importance(attributes,sorted_examples_per_option[op])
 				child_attribute_pos=self.__attributes.index(child_attribute)
 				child_options=self.__options[child_attribute_pos]
-				focusNode=Node(child_attribute,sorted_examples_per_option[op],child_options)
+				focusNode=Node(child_attribute,sorted_examples_per_option[op],child_options, indent, option)
 				parentNode.addChild(focusNode)
 
 				#recursion
@@ -177,13 +169,17 @@ class Tree:
 
 
 class Node:
-	__children = []
 
-	def __init__(self, attribute, examples, options):
+	def __init__(self, attribute, examples, options, indent, suffix):
 		self.__attribute=attribute
 		self.__sorted_examples=examples
 		self.__options=options
-		#self.__children=[]
+		self.__children=[]
+		self.__indent = indent
+		self.__suffix = suffix
+
+	def getIndent(self):
+		return self.__indent
 
 	def getAttribute(self):
 		return self.__attribute
@@ -201,6 +197,11 @@ class Node:
 		self.__children.append(child)
 
 	def print(self):
-		print("Attribute: ", self.__attribute)
-		#print("Examples (sorted): ", self.__sorted_examples)
+		if self.__suffix is "" :
+			print(self.__indent, "Attribute: ", self.__attribute)
+		else : 
+			print(self.__indent, "Attribute: ", self.__suffix, " : ", self.__attribute)
+#		print("Examples (sorted): ", self.__sorted_examples)
+		for child in self.__children :
+			child.print()
 		#print("Options: ", self.__options, ", with corresponding children: ", self.__children)

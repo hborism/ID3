@@ -43,7 +43,9 @@ class ARFFreader :
 				continue
 			if "@" in l or '%' in l :
 				continue
-			info = l.split(",")
+			info = l.replace(",", " ")
+			info = info.replace("\t", " ")
+			info = info.split()
 			data = []
 			for j in range(len(info)) :
 				k = info[j].strip()
