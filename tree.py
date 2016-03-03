@@ -4,163 +4,158 @@ import math
 import copy
 
 class Tree:
-	__data=[]
-	__no_examples=0
-	__attributes=[]
-	__options=[]
-	__goal=""
-	__goal_pos=0
-	__goal_entropy=-1
-	__root=0
-
-
-	def __init__(self,data, attributes,options,goal):
-		self.__data=data
-		self.__attributes=attributes
-		self.__options=options
-		self.__goal=goal
-
+	
+	def __init__(self, data, attributes, options):
+		self.data = data
+		self.attributes = attributes
+		self.options = options
+		self.nbr_o_ex = len(data)
+		self.goal_entropy=-1
+		self.root=0
 
 		#find the goal_entorpy
 		#x is the position of the goal attribute in self.data
-		self.__goal_pos=attributes.index(goal)
-
+		self.goal_pos = len(attributes) - 1
+		self.goal = attributes[-1:][0]
+		self.goal_opts = options[self.goal_pos]
 		#p is the number of positive outcomes of the goal function in our examples
-		p=0
-		self.__no_examples=len(data)
-		for i in range(self.__no_examples):
-			p += data[i][self.__goal_pos]
-
+		outcomes = options[self.goal_pos]
+		p_outcomes = [0 for i in range(len(outcomes))]
+		for d in data :
+			g_val = d[self.goal_pos]
+			p_outcomes[g_val] += 1
 		# entropy of goal
-		self.__goal_entropy=self.entropy(p/self.__no_examples)
+		self.goal_entropy=self.entropy(p_outcomes)
+		print("Goal entropy: ", self.goal_entropy)
 
-	def entropy(self, q):
-		if q<=0 or q>=1:
-			return 0
-		return -(q*math.log(q,2)+(1-q)*math.log(1-q,2))
+	def entropy(self, p_outcomes) :
+		entropy = 0
+		for k in p_outcomes :
+			if k == 0 :
+				continue
+			P_vk = k / sum(p_outcomes)
+			entropy += (P_vk * math.log(P_vk, 2))
+		return -entropy
 
 	def getRoot(self):
-		return self.__root
+		return self.root
 
 	def getAttributes(self):
-		return self.__attributes
+		return self.attributes
 
 	def goalEntropy(self):
-		return self.__goal_entropy
+		return self.goal_entropy
 
 	def gain(self, attribute, sorted_examples):
-		if attribute not in self.__attributes:
+		if attribute not in self.attributes:
 			return -1
 
 		#find position of attribute
-		attribute_pos=0
-		while self.__attributes[attribute_pos]!=attribute:
-			attribute_pos+=1
+		index = self.attributes.index(attribute)
 
 		#calculate the number of examples
-		no_examples=len(sorted_examples[0])+len(sorted_examples[1])
-		if no_examples==0:
+		ex_count = 0
+		for examples in sorted_examples :
+			ex_count += len(examples)
+		
+		if ex_count == 0:
 			return 0
 
 		#creating a tree for this attribute (look at fig 18.4 in book)
-		no_options=len(self.__options[attribute_pos])
-		result=[]
-		for c in range(0,no_options):
-			result.append([0,0])
+		opt_count = len(self.options[index])
+		result = [[0 for i in range(len(self.goal_opts))] for j in range(opt_count)]
 
-		for outcome in sorted_examples:
-			for i in range(0, len(outcome)):
-				result[outcome[i][attribute_pos]][outcome[i][self.__goal_pos]]+=1
-
-
+		for outcomes in sorted_examples:
+			for o in outcomes:
+				result[o[index]][o[self.goal_pos]]+=1
+		
 		#calculate the remainder
+		
 		remainder=0
-		c=0
-		for c in range(0, no_options):
-			if sum(result[c])!=0:
-				remainder+=(sum(result[c])/no_examples)*(self.entropy(result[c][0]/sum(result[c])))
+		for c in range(opt_count):
+			if sum(result[c]) == 0 :
+				continue
+			remainder += (sum(result[c])/ex_count)*(self.entropy(result[c]))
 
 
 		#return goal entropy minus the remainder (see page 704 in book)
-		return self.__goal_entropy-remainder
+		return self.goal_entropy-remainder
 
 
-	def sortExamples(self,examples):
-		sorted_examples=[]
-		p_examples=[]
-		n_examples=[]
-		for i in range(0, len(examples)):
-			if examples[i][self.__goal_pos]==0:
-				p_examples.append(examples[i])
-			else:
-				n_examples.append(examples[i])
-
-		sorted_examples.append(p_examples)
-		sorted_examples.append(n_examples)
-
+	def sortExamples(self, examples):
+		sorted_examples = [[] for i in range(len(self.goal_opts))]
+		for ex in examples:
+			sorted_examples[ex[self.goal_pos]].append(ex)
+		
 		return sorted_examples
 
 	def importance(self, attributes, examples):
-		maxgain=-1
-		maxgain_attribute=""
+		maxgain = -1
+		maxgain_attribute = ""
 		for x in attributes:
-			gain=self.gain(x, examples)
-			if gain>maxgain:
-				maxgain=gain
-				maxgain_attribute=x
+			gain = self.gain(x, examples)
+			if gain > maxgain:
+				maxgain = gain
+				maxgain_attribute = x
 		return maxgain_attribute
 
 	def buildTree(self):
-		attributes=copy.copy(self.__attributes)
-		attributes.remove(self.__goal)
+		attributes=copy.copy(self.attributes)
+		#print(self.goal)
+		#print(attributes)
+		attributes.remove(self.goal)
 
-		attribute=self.importance(attributes,self.sortExamples(self.__data))
-		options=self.__options[self.__attributes.index(attribute)]
+		attribute=self.importance(attributes,self.sortExamples(self.data))
+		options=self.options[self.attributes.index(attribute)]
 
 		#create root node
-		self.__root=Node(attribute,self.sortExamples(self.__data),options, "", "")
+		self.root=Node(attribute,self.sortExamples(self.data),options, "", "")
 
-		self.populateTree(self.__root)
+		self.populateTree(self.root)
 
 
 	def populateTree(self, parentNode):
 		options=parentNode.getOptions()
 		sorted_examples=parentNode.getSortedExamples()
-		attribute_pos=self.__attributes.index(parentNode.getAttribute())
+		attribute_pos=self.attributes.index(parentNode.getAttribute())
 		sorted_examples_per_option=[]
 		indent = parentNode.getIndent() + "\t"
 
-		for op in range(0,len(options)):
+		for op in range(len(options)):
 			temp_examples=[]
 			for outcome in sorted_examples:
 				for example in outcome:
 					if example[attribute_pos]==op:
 						temp_examples.append(example)
-
 			temp_examples=self.sortExamples(temp_examples)
 			sorted_examples_per_option.append(temp_examples)
 		#check that it works by printing. it produces the examples sorted as in figure 18.4
 		#print(sorted_examples_per_option)
-
+		lengths = list(map(len, sorted_examples)) 
+		#lengths = list(map(len, sorted_examples_per_option))
+		l_sum = sum(lengths)
+		#print(l_sum, " : ", lengths)
 		#walk through each option to see if a child shall be a leaf or node
 		for op in range(len(options)):
 			option = options[op]
-			if len(sorted_examples_per_option[op][0])==0 and len(sorted_examples_per_option[op][1])==0:
-				focusNode=Node("Yes/no",[],[], indent, option)
+			if l_sum == 0 :
+				focusNode=Node("none", [], [], indent, option)
 				parentNode.addChild(focusNode)
-			elif len(sorted_examples_per_option[op][0])==0:
-				focusNode=Node("No",sorted_examples_per_option[op],[], indent, option)
-				parentNode.addChild(copy.copy(focusNode))
-			elif len(sorted_examples_per_option[op][1])==0:
-				focusNode=Node("Yes",sorted_examples_per_option[op],[], indent, option)
-				parentNode.addChild(focusNode)
-			else:
-				attributes=copy.copy(self.__attributes)
+				continue
+			found = False
+			for i in range(len(lengths)) :
+				if l_sum - lengths[i] == 0 :
+					goal = self.goal_opts[i]
+					focusNode = Node(goal, sorted_examples_per_option[op], [], indent, option)
+					found = True
+					break
+			if not found :
+				attributes=copy.copy(self.attributes)
 				attributes.remove(parentNode.getAttribute())
-				attributes.remove(self.__goal)
+				attributes.remove(self.goal)
 				child_attribute=self.importance(attributes,sorted_examples_per_option[op])
-				child_attribute_pos=self.__attributes.index(child_attribute)
-				child_options=self.__options[child_attribute_pos]
+				child_attribute_pos=self.attributes.index(child_attribute)
+				child_options=self.options[child_attribute_pos]
 				focusNode=Node(child_attribute,sorted_examples_per_option[op],child_options, indent, option)
 				parentNode.addChild(focusNode)
 
@@ -169,44 +164,42 @@ class Tree:
 
 
 class Node:
-
 	def __init__(self, attribute, examples, options, indent, suffix):
-		self.__attribute=attribute
-		self.__sorted_examples=examples
-		self.__options=options
-		self.__children=[]
-		self.__indent = indent
-		self.__suffix = suffix
+		self.attribute=attribute
+		self.sorted_examples=examples
+		self.options=options
+		self.children=[]
+		self.indent = indent
+		self.suffix = suffix
 
 	def getIndent(self):
-		return self.__indent
+		return self.indent
 
 	def getAttribute(self):
-		return self.__attribute
+		return self.attribute
 
 	def getSortedExamples(self):
-		return self.__sorted_examples
+		return self.sorted_examples
 
 	def getOptions(self):
-		return self.__options
+		return self.options
 
 	def getChildren(self):
-		return self.__children
+		return self.children
 
 	def addChild(self, child):
-		self.__children.append(child)
+		self.children.append(child)
 
 	def print(self):
-		s = self.__indent + "Attribute: "
-		if not self.__suffix is "" :
-			s += self.__suffix + " : "
-		p = 0
-		n = 0
-		if len(self.__sorted_examples) == 2 :
-			p = len(self.__sorted_examples[0])
-			n = len(self.__sorted_examples[1])
-		print(s, self.__attribute, " : [", p, ", ", n, "]")
-		#print(s, self.__attribute, " : ", self.__sorted_examples)
-		for child in self.__children :
+		s = self.indent# + "Attribute: "
+		if not self.suffix is "" :
+			s += self.suffix + " : "
+		s += self.attribute + " : ["
+		for ex in self.sorted_examples :
+			s += str(len(ex)) + ", "
+		s = s.strip(", ") + "]"
+		print(s)
+		#print(s, self.attribute, " : ", self.sorted_examples)
+		for child in self.children :
 			child.print()
-		#print("Options: ", self.__options, ", with corresponding children: ", self.__children)
+		#print("Options: ", self.options, ", with corresponding children: ", self.children)

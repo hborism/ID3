@@ -1,16 +1,27 @@
-import new_reader
 import reader
 import tree
+import sys
 
-print("Welcome to ID3!")
-#print("Try to follow the instructions as closely as possible,\nthis program does not handle errors.")
-#filename = input("Input the file name\n")
-r=new_reader.ARFFreader("waitfortable.arff")
-#r=reader.ARFFreader("waitfortable.arff")
-print(r.relation())
-print(r.attributes())
-print(r.options())
-print(r.data())
+argv = sys.argv[1:]
+for file_name in argv :
+	print("Filename : ", file_name)
+	r=reader.ARFFreader(file_name)
+	#print(r.relation())
+	#print(r.attributes())
+	#print(r.options())
+	#print(r.data())
+	t=tree.Tree(r.data(),r.attributes(),r.options())
+	#print(t.goalEntropy())
+	t.buildTree()
+	abc=t.getRoot()
+	abc.print()
+#	t=tree.Tree(r.data(),r.attributes(),r.options(),"goal")
+#	t.buildTree()
+#	abc=t.getRoot()
+#	abc.print()
+	
+	
+"""
 
 t=tree.Tree(r.data(),r.attributes(),r.options(),"goal")
 print(t.goalEntropy())
@@ -19,7 +30,7 @@ t.buildTree()
 abc=t.getRoot()
 
 abc.print()
-"""
+
 def print_node(node) :
 	node.print()
 	children = node.getChildren()
