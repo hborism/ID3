@@ -2,6 +2,7 @@ import reader
 import tree
 import sys
 
+f = open('output.dot', 'w')
 argv = sys.argv[1:]
 for file_name in argv :
 	print("Filename : ", file_name)
@@ -15,3 +16,5 @@ for file_name in argv :
 	t.buildTree()
 	abc=t.getRoot()
 	abc.print()
+	dot = t.exportDot()
+	f.write(dot)

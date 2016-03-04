@@ -138,15 +138,15 @@ class Tree:
 		#walk through each option to see if a child shall be a leaf or node
 		for op in range(len(options)):
 			option = options[op]
-			if l_sum == 0 :
-				focusNode=Node("none", [], [], indent, option)
-				parentNode.addChild(focusNode)
-				continue
+			temp_lengths = list(map(len, sorted_examples_per_option[op]))
+			temp_sum = sum(temp_lengths)
+			focusNode=0
 			found = False
-			for i in range(len(lengths)) :
-				if l_sum - lengths[i] == 0 :
+			for i in range(len(temp_lengths)) :
+				if temp_sum - temp_lengths[i] == 0 :
 					goal = self.goal_opts[i]
-					focusNode = Node(goal, sorted_examples_per_option[op], [], indent, option)
+					focusNode = Node(option, sorted_examples_per_option[op], [], indent, "")
+					parentNode.addChild(focusNode)
 					found = True
 					break
 			if not found :
@@ -154,14 +154,27 @@ class Tree:
 				attributes.remove(parentNode.getAttribute())
 				attributes.remove(self.goal)
 				child_attribute=self.importance(attributes,sorted_examples_per_option[op])
+				#print(child_attribute)
 				child_attribute_pos=self.attributes.index(child_attribute)
 				child_options=self.options[child_attribute_pos]
 				focusNode=Node(child_attribute,sorted_examples_per_option[op],child_options, indent, option)
+				#print(focusNode.getAttribute())
 				parentNode.addChild(focusNode)
 
 				#recursion
 				self.populateTree(focusNode)
+#			print(focusNode.getSuffix(), focusNode.getAttribute(),  focusNode.getSortedExamples())
 
+	def exportDot(self) :
+		head = "digraph g {"
+		nodes = self.root.dotNode(0)
+		body = self.root.dot()
+		tail = "}"
+		dot_string = head + "\n"
+		for s in (nodes + body) :
+			dot_string += "\t" + s + "\n"
+		dot_string += tail + "\n"
+		return dot_string
 
 class Node:
 	def __init__(self, attribute, examples, options, indent, suffix):
@@ -171,6 +184,7 @@ class Node:
 		self.children=[]
 		self.indent = indent
 		self.suffix = suffix
+		self.ID = ""
 
 	def getIndent(self):
 		return self.indent
@@ -189,9 +203,47 @@ class Node:
 
 	def addChild(self, child):
 		self.children.append(child)
+	
+	def getSuffix(self):
+		return self.suffix
+	
+	def getID(self):
+		return self.ID
+
+	def dotNode(self, index) :
+		lengths = list(map(len, self.sorted_examples))
+		self.ID = "struct" + str(index)
+		node_info = []
+		node = self.ID
+		node += "[shape=record, label=\"{ "
+		node += self.attribute
+		node += " |{"
+		for l in lengths :
+			if l not in lengths[-1:] :
+				node += str(l) + " | "
+		node += str(lengths[-1:][0]) + "}|}\"]"
+		node_info.append(node)
+		index *= 10
+		for child in self.children :
+			index += 1
+			node_info[len(node_info):] = child.dotNode(index)
+		return node_info
+
+	def dot(self):
+		edges = []
+		for i in range(len(self.children)) :
+			s = "\"" + self.ID + "\""
+			s += " -> \"" + self.children[i].getID() + "\""
+			s += " [label=\""
+			s += self.options[i] + "\"];"
+			edges.append(s)
+		for child in self.children :
+			edges[len(edges):] = child.dot()
+		return edges
+		
 
 	def print(self):
-		s = self.indent# + "Attribute: "
+		s = self.indent
 		if not self.suffix is "" :
 			s += self.suffix + " : "
 		s += self.attribute + " : ["
@@ -199,7 +251,5 @@ class Node:
 			s += str(len(ex)) + ", "
 		s = s.strip(", ") + "]"
 		print(s)
-		#print(s, self.attribute, " : ", self.sorted_examples)
 		for child in self.children :
 			child.print()
-		#print("Options: ", self.options, ", with corresponding children: ", self.children)
