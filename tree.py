@@ -218,10 +218,12 @@ class Node:
 		node += "[shape=record, label=\"{ "
 		node += self.attribute
 		node += " |{"
+		print(lengths)
 		for l in lengths :
-			if l not in lengths[-1:] :
-				node += str(l) + " | "
-		node += str(lengths[-1:][0]) + "}|}\"]"
+			node += str(l) + " | "
+		node = node[:-3]
+		node += "}}\"]"
+		print(node)
 		node_info.append(node)
 		index *= 10
 		for child in self.children :
